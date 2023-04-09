@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: licence-plate-triton-server-ensemble-svc
+  namespace: inference-server
+spec:
+  type: NodePort
+  selector:
+    app: licence-plate-triton-server-ensemble
+  ports:
+    - protocol: TCP
+      name: http
+      port: 8000
+      nodePort: 30800
+      targetPort: 8000
+    - protocol: TCP
+      name: grpc
+      port: 8001
+      nodePort: 30801
+      targetPort: 8001
+    - protocol: TCP
+      name: metrics
+      nodePort: 30802
+      port: 8002
+      targetPort: 8002
