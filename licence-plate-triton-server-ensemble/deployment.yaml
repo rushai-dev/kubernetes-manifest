@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: licence-plate-triton-server-ensemble
+  name: licence-plate-triton-server-ensemble
+  namespace: inference-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: licence-plate-triton-server-ensemble
+  template:
+    metadata:
+      labels:
+        app: licence-plate-triton-server-ensemble
+    spec:
+      containers:
+      - image: rushai/licence-plate-triton-server-ensemble:21.09-py3
+        name: licence-plate-triton-server-ensemble
+        command: ["/bin/bash"]
+        args: ["-c", "cp /var/run/secrets/kubernetes.io/serviceaccount/ca.crt /usr/local/share/ca-certificates && update-ca-certificates && /opt/tritonserver/bin/tritonserver --model-store=s3://http://202.151.176.25:80/licence-plate-triton-server-ensemble/"]
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-credentials
+              key: AWS_SECRET_ACCESS_KEY      
+        ports:
+          - containerPort: 8000
+            name: http
+          - containerPort: 8001
+            name: grpc
+          - containerPort: 8002
+            name: metrics
+        volumeMounts:
+        - mountPath: /dev/shm
+          name: dshm
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
